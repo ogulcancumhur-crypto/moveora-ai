@@ -1,17 +1,28 @@
 import OpenAI from "openai";
 
-export default async function handler(req,res){
+export default async function handler(req, res) {
 
  const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
  });
 
- const {lifestyle} = req.body;
+ try {
 
- const ai = await openai.responses.create({
-  model:"gpt-4.1-mini",
-  input:`Give smart travel ideas for: ${lifestyle}`
- });
+  const { lifestyle } = req.body || {};
 
- res.status(200).json({reply: ai.output_text});
+  const response = await openai.responses.create({
+   model: "gpt-4.1-mini",
+   input: `Give smart travel ideas for this lifestyle: ${lifestyle}`
+  });
+
+  const text = response.output[0].content[0].text;
+
+  res.status(200).json({ reply: text });
+
+ } catch (error) {
+
+  res.status(500).json({ error: error.message });
+
+ }
+
 }

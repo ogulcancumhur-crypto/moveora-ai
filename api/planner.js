@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+apiKey: process.env.OPENAI_API_KEY,
 });
 
 // 🌍 20 CITY DATA
@@ -30,59 +30,59 @@ const cities = [
 
 // 🧠 SCORING FUNCTION
 function scoreCity(city, input) {
-  let score = 0;
-  const text = input.toLowerCase();
+let score = 0;
+const text = input.toLowerCase();
 
-  if (text.includes("cheap") || text.includes("budget")) score += city.cost * 2;
-  if (text.includes("warm") || text.includes("sun")) score += city.weather * 2;
-  if (text.includes("remote") || text.includes("digital")) score += city.remote * 2;
+if (text.includes("cheap")) score += city.cost * 2;
+if (text.includes("warm")) score += city.weather * 2;
+if (text.includes("remote")) score += city.remote * 2;
 
-  return score;
+return score;
 }
 
-// ⚙️ GET TOP 3
+// 🎯 TOP 3 CITIES
 function getTopCities(input) {
-  return cities
-    .map(city => ({
-      ...city,
-      score: scoreCity(city, input)
-    }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 3);
+return cities
+.map(city => ({
+...city,
+score: scoreCity(city, input)
+}))
+.sort((a, b) => b.score - a.score)
+.slice(0, 3);
 }
 
 // 🚀 API HANDLER
 export default async function handler(req, res) {
-  try {
-    const { lifestyle } = req.body || {};
+try {
+const input = req.body.prompt || "";
 
-    const topCities = getTopCities(lifestyle || "");
+const topCities = getTopCities(input);
 
-    const aiPrompt = `
+const aiPrompt = `
 Explain why these cities are good choices:
 
 ${topCities.map(c => c.city).join(", ")}
 
-User input:
-${lifestyle}
+User input: ${input}
 
-Give short and clear answers.
-Include match percentage for each city.
+Keep it short and clear.
 `;
 
-    const response = await openai.responses.create({
-      model: "gpt-4.1-mini",
-      input: aiPrompt,
-    });
+const response = await openai.responses.create({
+model: "gpt-4.1-mini",
+input: aiPrompt,
+});
 
-    const text = response.output[0].content[0].text;
+const text = response.output[0].content[0].text;
 
-    res.status(200).json({
-      cities: topCities,
-      reply: text
-    });
+res.status(200).json({
+cities: topCities,
+reply: text
+});
 
-  } catch (error) {
-    res.status(500).json({ error: "Something went wrong" });
-  }
+} catch (error) {
+res.status(500).json({
+error: error.message
+});
+}
 }

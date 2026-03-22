@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Moveora AI</title>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 40px;
+      background: #f5f7fa;
+    }
+    h1 {
+      color: #222;
+    }
+    input {
+      padding: 10px;
+      width: 300px;
+    }
+    button {
+      padding: 10px 20px;
+      margin-left: 10px;
+      background: blue;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    .card {
+      background: white;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🌍 Moveora AI</h1>
+
+<input id="input" placeholder="cheap warm remote city" />
+<button onclick="getCities()">Get Recommendations</button>
+
+<div id="results"></div>
+
+<script>
+async function getCities() {
+  const input = document.getElementById("input").value;
+
+  const res = await fetch("/api/planner", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ prompt: input })
+  });
+
+  const data = await res.json();
+
+  const resultsDiv = document.getElementById("results");
+  resultsDiv.innerHTML = "";
+
+  data.cities.forEach(city => {
+    resultsDiv.innerHTML += `
+      <div class="card">
+        <h3>${city.city} (Score: ${city.score})</h3>
+      </div>
+    `;
+  });
+
+  resultsDiv.innerHTML += `<p>${data.reply}</p>`;
+}
+</script>
+
+</body>
+</html>
